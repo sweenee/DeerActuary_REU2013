@@ -1,7 +1,6 @@
 function [ Ztrue, Xtrue ] = DeerPop( T, N, r1, h, F, alpha )
 % Solution to our deer population Logistic SDE with harvest
 %   Detailed explanation goes here
-%randn('state',100)
 
 r2=r1-h;
 f=(r2/r1)*F;
@@ -18,15 +17,14 @@ W = cumsum(dW);
 ds=T/N;
 s=ds:ds:T;    %time
 
-for i=1:N
-    Q(i)=cumsum(exp(b*s(i) + alpha*W(i))*dW(i));    
-end
+Q = zeros(N);
 
+for i=1:N
+    Q(i)=cumsum(exp(b*s(i) + alpha*W(i))*dW(i));  
+end
 
 Ztrue = (r2/b) + g0*exp((-b*T)-(alpha*W)) + exp((-b*T)-(alpha*W))*((-alpha*r2)/b)*Q(i);
 
-Xtrue=f + (f./Ztrue);
+Xtrue = f + (f./Ztrue);
 
-
-end
 
