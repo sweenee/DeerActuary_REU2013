@@ -1,7 +1,7 @@
 T <- 10
 N <- 3650
-r <- 5
-F <- 1000000
+r <- 5			# r tilted
+F <- 1000000		# F tilted
 alpha <- 1
 
 dt <- T/N
