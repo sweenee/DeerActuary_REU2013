@@ -1,27 +1,32 @@
 function [ Mem, Mmil ] = InsApprox( T, N, rho, beta, P, gamma )
 %UNTITLED5 Summary of this function goes here
-%   Detailed explanation goes here
+%   T time
+% N Steps
+% rho insurance rate thing (capital R)
+% beta claims rate
+% P payout
+% gamma noise coefficient
 
-%finer partition for true data
+%finer partition 
 R = 4;
 L = R*N;
 
 dt = T/N;
 Dt = dt/R;
-dW = sqrt(dt)*randn(1,L+1);
+dW = sqrt(dt)*randn(L+1,1);
 dW(1)=0.0;
 
-m0 = 0;
+m0 = 225000000;
 
-Mem = zeros(1,L+1); %initialize EM vector
+Mem = zeros(L+1, 1); %initialize EM vector
 Mem(1) = m0;    %setting the initial condition
 Mtemp_em = m0;
 
-Mmil = zeros(1,L+1); %initilize Mil vector
+Mmil = zeros(L+1, 1); %initilize Mil vector
 Mmil(1) = m0;    %setting the initial condition
 Mtemp_mil = m0;
 
-[X, Z]=DeerPop(10, 400, 30, 20, 3000000, 1); %call X
+[X, Z] = DeerPop(10, L, 30, 20, 3000000, 1); %call X
 
 %EM and Milstein Approximations
 for j = 1:L
@@ -32,8 +37,6 @@ for j = 1:L
    Mmil(j+1) = Mtemp_mil;
 end
 
-time = 0:Dt:T;     %time for EM and Mil
+time = 0:Dt:T;     %time for EM and Mil Approximations
 plot (time, Mem, 'r*',time, Mmil, 'b*')    
 legend('Mem','Mmil')
-
-
