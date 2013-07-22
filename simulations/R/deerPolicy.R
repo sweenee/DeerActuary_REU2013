@@ -21,7 +21,10 @@ if(TESTING)
       }
 
     # Reset the graphics context
-    dev.off()
+    if(length(dev.list())>0)
+      {
+        dev.off()
+      }
     par(mfrow=c(2,2))
   }
 
