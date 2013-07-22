@@ -26,10 +26,8 @@
 		dm &=& (Rm - \beta x + P) dt - \gamma x dW
 	\end{eqnarray}
 	\begin{itemize}
-		\item dx
-		\item dm
 		\item B
-		\item Parameters
+		\item Parameters - $\alpha$, $\gamma$, $P$
 	\end{itemize}
 \end{frame}
 
@@ -41,6 +39,12 @@
 
 \begin{frame}
     \frametitle{Milstein}
+	\begin{eqnarray*}
+		X_{j} &=& X_{j-1} + \triangle tf(X_{j-1}) + g(X_{j-1})(W(\tau_{j})-W(\tau_{j-1})) 			\nonumber\\ 
+		&& + \frac{1}{2} g(X_{j-1})g'(X_{j-1})((W(\tau_{j})-W(\tau_{j-1}))^{2}-\triangle t)
+		\\ j &=& 1,2,... ,L
+	\end{eqnarray*}
+
 \end{frame}
 
 \begin{frame}
