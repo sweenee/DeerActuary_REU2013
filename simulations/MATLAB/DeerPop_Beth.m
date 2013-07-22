@@ -1,4 +1,4 @@
-function [ Z, X ] = DeerPop_Beth( T, N, r1, h, F, alpha )
+function [ Z, X , Xem, Xmil] = DeerPop_Beth( T, N, r1, h, F, alpha )
 % Solution to our deer population Logistic SDE with harvest
 %   Detailed explanation goes here
 
@@ -24,9 +24,9 @@ Q = cumsum(exp(b*s+alpha*W).*dW);   %integral part of analytic solution
 Z = (rtilde/b) + g0*exp((-b*s)-(alpha*W)) + exp((-b*s)-(alpha*W)).*((-alpha*rtilde)/b).*Q; %analytic solution of Z
 X = (ftilde./Z); % transform back to X
 
-clf;
-plot(s, X, 'g-')
-hold on
+%clf;
+%plot(s, X, 'g-')
+%hold on
 %%{
 
 %Candace's code
@@ -49,8 +49,8 @@ for j = 1:N
    Xmil(j+1) = Xtemp_mil;
 end
 
-plot (s, Xem, 'r*',s, Xmil, 'b*')    
-legend('Xtrue','Xem','Xmil')
+%plot (s, Xem, 'r*',s, Xmil, 'b*')    
+%legend('Xtrue','Xem','Xmil')
 
 
 %}
