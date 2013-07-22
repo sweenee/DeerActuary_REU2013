@@ -1,4 +1,4 @@
-function [ Z, X , Xem, Xmil] = DeerPop_Beth( T, N, r1, h, F, alpha )
+function [ Z, X , Xem] = DeerPop_Beth( T, N, r1, h, F, alpha )
 % Solution to our deer population Logistic SDE with harvest
 %   Detailed explanation goes here
 
@@ -36,17 +36,17 @@ Xem = zeros(1,N+1); %initialize EM vector
 Xem(1) = x0;    %setting the initial condition
 Xtemp_em = x0;
 
-Xmil = zeros(1,N+1); %initialize Mil vector
-Xmil(1) = x0;    %setting the initial condition
-Xtemp_mil = x0;
+%Xmil = zeros(1,N+1); %initialize Mil vector
+%Xmil(1) = x0;    %setting the initial condition
+%Xtemp_mil = x0;
 
 %EM and Milstein Approximations
 for j = 1:N
    Winc = dW(j);
    Xtemp_em = Xtemp_em + ds * rtilde * Xtemp_em *(1-Xtemp_em/ftilde) + alpha * Xtemp_em * Winc;
    Xem(j+1) = Xtemp_em;
-   Xtemp_mil = Xtemp_mil + ds * rtilde * Xtemp_mil * (1-Xtemp_mil/ftilde) + alpha *Xtemp_mil* Winc + 0.5*alpha * alpha * Xtemp_mil *(Winc*Winc-ds);
-   Xmil(j+1) = Xtemp_mil;
+   %Xtemp_mil = Xtemp_mil + ds * rtilde * Xtemp_mil * (1-Xtemp_mil/ftilde) + alpha *Xtemp_mil* Winc + 0.5*alpha * alpha * Xtemp_mil *(Winc*Winc-ds);
+   %Xmil(j+1) = Xtemp_mil;
 end
 
 %plot (s, Xem, 'r*',s, Xmil, 'b*')    
