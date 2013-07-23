@@ -23,8 +23,3 @@ hold on
 plot( s, Mem, 'r*')
 title('M');
 legend( 'M', 'Mem')
-
-mean(Xem)
-var(Xem)
-mean(Mem)
-var(Mem)
