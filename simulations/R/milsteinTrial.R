@@ -9,6 +9,7 @@
 # Set the parameters for the approximation
 T = 2.0;
 N = 5000;
+alpha = 1.0;
 
 # Allocate the space
 mEuler       = vector(length = N + 1);
@@ -31,17 +32,20 @@ while(lupe <= N)
     W[lupe+1] = W[lupe] + dw;
 
     # Update the euler approximation
-    mEuler[lupe+1] = mEuler[lupe] + W[lupe]*dw;
+    mEuler[lupe+1] = mEuler[lupe] +
+      sqrt(2*alpha)*exp(alpha*t[lupe])*cos(sqrt(2*alpha)*W[lupe])*dw;
 
    # Update the Milstein approximation
-    mMilstein[lupe+1] = mMilstein[lupe] + W[lupe]*dw + 0.5*(dw*dw-dt);
+    mMilstein[lupe+1] = mMilstein[lupe] +
+      sqrt(2*alpha)*exp(alpha*t[lupe])*cos(sqrt(2*alpha)*W[lupe])*dw -
+        alpha*exp(alpha*t[lupe])*sin(sqrt(2*alpha)*W[lupe])*(dw*dw-dt);
 
     # Increment the loop counter
     lupe = lupe + 1;
   }
 
 # Plot the true solution and then the approximations
-true = 0.5*(W*W-t);
+true = exp(alpha*t)*sin(sqrt(2*alpha)*W);
 plot(t,true,type='l',col=1);
 points(t,mEuler,type="p",pch=1,col=2);
 points(t,mMilstein,type="p",pch=2,col=3);
