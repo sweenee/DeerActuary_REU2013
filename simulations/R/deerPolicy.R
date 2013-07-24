@@ -112,7 +112,7 @@ if (TESTING) {
 # First set the parameters used for the bond fund equation
 rho <- 0.004    # Government bond rate
 beta <- 9     # Cost of claim proportional to population
-P <- 225000       # Premium
+P <- 230000       # Premium
 gamma <- 0.1    # Noise coefficient
 g <- 0.04       # Profit margin
 
@@ -123,8 +123,11 @@ Mmil[1] <- m0
 Mtemp <- m0
 for (i in 1:N) {
   Mtemp <- Mtemp + dt * (rho * Mtemp - beta * Xtrue[i] + P) -
-    dw[i] * gamma * Xtrue[i] +
-    0.5 * gamma * gamma * Xtrue[i] * (dw[i] * dw[i] - dt)
+    dw[i] * gamma * Xtrue[i] -
+    0.5 * gamma * alpha * Xtrue[i] * (dw[i] * dw[i] - dt)
+  if (Mtemp < 0) {
+    Mtemp <- 0
+  }
   Mmil[i + 1] <- Mtemp
 }
 
@@ -181,8 +184,8 @@ approx <- function(alpha, gamma, P) {   # Noise coefficient and premium
   Mtemp <- m0
   for (i in 1:N) {
     Mtemp <- Mtemp + dt * (rho * Mtemp - beta * Xtrue[i] + P) -
-      dw[i] * gamma * Xtrue[i] +
-      0.5 * gamma * gamma * Xtrue[i] * (dw[i] * dw[i] - dt)
+      dw[i] * gamma * Xtrue[i] -
+      0.5 * gamma * alpha * Xtrue[i] * (dw[i] * dw[i] - dt)
     Mmil[i + 1] <- Mtemp
   }
   
@@ -195,7 +198,7 @@ alpha <- gamma <- P <- Xmean <- Xvar <- Mmean <- Mvar <- vector(length = 0)
 
 for (i in seq(0.02, 0.1, 0.02)) {
   for (j in seq(0.02, 0.1, 0.02)) {
-    for (k in seq(5200, 6000, 200)) {
+    for (k in seq(230000, 250000, 5000)) {
       Xapp <- Mapp <- vector(length = 5)
       for (l in 1:5) {
         App <- approx(i, j, k)
