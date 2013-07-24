@@ -150,7 +150,7 @@ if(TESTING)
 # Simulate population and payout using different alpha, gamma and P
 
 T <- 10       # Set the final time
-N <- 10000    # Set the number of sample points
+N <- 100    # Set the number of sample points
 r <- 1.54  		# r tilde - The scaled growth factor
 F <- 24781	  # F tilde - The scaled carrying capacity
 dt <- T/N     # Calculate the time step
@@ -207,13 +207,14 @@ approx <- function(alpha, gamma, P) {   # Noise coefficient and premium
 
 alpha <- gamma <- P <- Xmean <- Xvar <- Mmean <- Mvar <- vector(length = 0)
 
-for (i in seq(0.01, 0.1, 0.01)) {
-  for (j in seq(0.01, 0.1, 0.01)) {
-    for (k in seq(5000, 6000, 100)) {
-      Xapp <- Mapp <- vector(length = 10)
-      for (l in 1:10) {
-        Xapp[l] <- approx(i, j, k)[1]
-        Mapp[l] <- approx(i, j, k)[2]
+for (i in seq(0.02, 0.1, 0.02)) {
+  for (j in seq(0.02, 0.1, 0.02)) {
+    for (k in seq(5200, 6000, 200)) {
+      Xapp <- Mapp <- vector(length = 5)
+      for (l in 1:5) {
+        App <- approx(i, j, k)
+        Xapp[l] <- App[1]
+        Mapp[l] <- App[2]
       }
       alpha <- c(alpha, i)
       gamma <- c(gamma, j)
