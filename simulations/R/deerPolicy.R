@@ -48,7 +48,9 @@ phi <- exp((a - 0.5 * b ^ 2) * seq(0, T, dt) - b * w)
 # Approximate the stochastic integral for the z equation.
 # TODO - convert to a Milstein approximation.
 integral <- vector(length = N + 1)
-integral <- c(0, cumsum(exp((0.5 * b ^ 2 - a) * t[1:N] + b * w[1:N]) * dw[1:N]))
+integral <- c(0, cumsum(exp((0.5 * b ^ 2 - a) * t[1:N] + b * w[1:N]) * dw + 0.5 
+                        * b * exp((0.5 * b ^ 2 - a) * t[1:N] + b * w[1:N])
+                        * (dw * dw - dt)))
 
 # Calculate the values of Z based on the approximation of the integral
 # above. Then undo the transformation to calculate the population.
@@ -68,24 +70,20 @@ if(TESTING) {
 L <- 2500
 R <- N/L
 Dt <- R * dt
-Xem <- Xmil <- vector(length = L + 1)
-Xem[1] <- Xmil[1] <- x0
-Xtemp1 <- Xtemp2 <- x0
+Xmil <- vector(length = L + 1)
+Xmil[1] <- x0
+Xtemp <- x0
 for (i in 1:L) {
   Winc <- sum(dw[(R * (i - 1) + 1):(R * i)])
-  Xtemp1 <- Xtemp1 + Dt * r * Xtemp1 * (1 - Xtemp1/F) + alpha * Xtemp1 * Winc
-  Xem[i + 1] <- Xtemp1
-  Xtemp2 <- Xtemp2 + Dt * r * Xtemp2 * (1 - Xtemp2/F) + alpha * Xtemp2 * Winc + 0.5 * alpha * alpha * Xtemp2 * (Winc * Winc - Dt)
-  Xmil[i + 1] <- Xtemp2
+  Xtemp <- Xtemp + Dt * r * Xtemp * (1 - Xtemp/F) + alpha * Xtemp * Winc + 
+    0.5 * alpha * alpha * Xtemp * (Winc * Winc - Dt)
+  Xmil[i + 1] <- Xtemp
 }
 
 if(TESTING) {
   # Add these new approximations to the plot.
   courseTime = seq(0, T, Dt);
-  points(courseTime, Xem, col = "green", pch = 16)
-  points(courseTime, Xmil, col = "red", pch = 4, lwd = 2)
-  legend("bottomleft", legend = c("Euler", "Milstein"),
-         col = c("green", "red"), pch = c(16, 4), lwd = c(1, 2), cex = 0.8)
+  points(courseTime, Xmil, col = "green", pch = 4, lwd = 2)
 }
 
 
@@ -123,7 +121,7 @@ if(TESTING) {
 # First set the parameters used for the bond fund equation
 rho <- 0.04    # Government bond rate
 beta <- 0.1     # Cost of claim proportional to population
-P <- 6000       # Premium
+P <- 600       # Premium
 gamma <- 0.1    # Noise coefficient
 g <- 0.04       # Profit margin
 
@@ -132,7 +130,6 @@ m0 <- (beta * F - P)/(rho - g)
 Mmil <- vector(length = N + 1)
 Mmil[1] <- m0
 Mtemp <- m0
-Xtrue <- population(alpha)
 for (i in 1:N) {
   Mtemp <- Mtemp + dt * (rho * Mtemp - beta * Xtrue[i] + P) -
     dw[i] * gamma * Xtrue[i] +
@@ -140,8 +137,7 @@ for (i in 1:N) {
   Mmil[i + 1] <- Mtemp
 }
 
-if(TESTING)
-{
+if(TESTING) {
   # Plot the value of the funds
   plot(t, Mmil, type = "p", pch = 4, col = "purple",
        xlab = "T", ylab = "M", main = "Insurance Payout")
