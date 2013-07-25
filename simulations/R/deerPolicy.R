@@ -169,8 +169,9 @@ approx <- function(alpha, gamma, P) {   # Noise coefficient and premium
   # Approximate the stochastic integral for the z equation.
   # TODO - convert to a Milstein approximation.
   integral <- vector(length = N + 1)
-  integral <- c(0, cumsum(exp((0.5 * b ^ 2 - a) * t[1:N] + 
-                                b * w[1:N]) * dw[1:N]))
+  integral <- c(0, cumsum(exp((0.5 * b ^ 2 - a) * t[1:N] + b * w[1:N]) * dw +
+                            0.5 * b * exp((0.5 * b ^ 2 - a) * t[1:N] + 
+                                            b * w[1:N]) * (dw * dw - dt)))
   
   # Calculate the values of Z based on the approximation of the integral
   # above. Then undo the transformation to calculate the population.
