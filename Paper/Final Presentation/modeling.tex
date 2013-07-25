@@ -43,7 +43,6 @@
 \end{frame}
 
 
-
 \begin{frame}
     \frametitle{Methods of Approximations}
 	Euler-Maruyama Method
@@ -53,6 +52,7 @@
 	\end{eqnarray*}
 	Milstein Method
 	\begin{eqnarray*}
+
 		X_{j} &=& X_{j-1} + \triangle tf(X_{j-1}) + g(X_{j-1})(W(\tau_{j})-W(\tau_{j-1})) 	\nonumber\\ 
 		&& + \frac{1}{2} g(X_{j-1})g'(X_{j-1})((W(\tau_{j})-W(\tau_{j-1}))^{2}-\triangle t)
 		\\ j &=& 1,2,... ,L		
