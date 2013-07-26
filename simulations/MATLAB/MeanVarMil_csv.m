@@ -14,7 +14,7 @@ tic
 for i=alpha0:dalpha:alpha
     for j=gamma0:dgamma:gamma
         for k=P0:dP:P
-            fp=fopen('meanvarmil100.csv','a');
+            fp=fopen('meanvarmil10.csv','a');
             [Xmean, Xvar, Mmean, Mvar] = MeanVar_DeerInsSim_Mil(i, j, k, iterations);
             fprintf(fp,'%f, %f, %f, %f, %f, %f, %f\n',i, j, k, Xmean, Xvar, Mmean, Mvar);
             fclose(fp);
