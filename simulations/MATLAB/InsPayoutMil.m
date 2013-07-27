@@ -8,9 +8,6 @@ ftilde=(rtilde/r1)*F;
 dt=sqrt(T/N);
 %dW = dt*randn(1, N+1);
 
-ds=T/N;
-s=(0:ds:T);
-
 m0 = (beta*ftilde - P)/(rho-g);
 Mmil = zeros(1, N+1);
 Mmil(1) = m0;
@@ -23,6 +20,9 @@ for i=1:N
     Mtemp = Mtemp + dt*(rho*Mtemp - beta*Xtrue(i)+P) - Winc*gamma*Xtrue(i) - .5*gamma*alpha*Xtrue(i)*(Winc*Winc-dt);
     Mmil(i+1) = Mtemp;
 end
+
+%ds=T/N;
+%s=(0:ds:T);
 
 %plot(s, Mmil, 'bx')
 %legend('Mmil')

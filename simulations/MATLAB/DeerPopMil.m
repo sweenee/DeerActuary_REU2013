@@ -10,7 +10,7 @@ b=(.5*(alpha^2))-a;
 
 g0= 1-(rtilde/b);
 
-dt=sqrt(T/N);
+%dt = sqrt(T/N);
 %dW = dt*randn(1, N+1);
 W = [0, cumsum(dW(1:N))]; 
 
