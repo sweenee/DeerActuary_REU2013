@@ -13,12 +13,12 @@ beta = 9; %.003*3000
 g = .005;
 
 dt = sqrt(T/N);
-dW = dt*randn(1, N+1);
 
 Xvec = zeros(1, iterations);
 Mvec = zeros(1, iterations);
 
 for i=1:iterations
+    dW = dt*randn(1, N+1);
     [Xtrue, Mmil] = DeerInsSimMil( T, N, r1, h, F, alpha, rho, beta, P, gamma, g, dW );
     Xvec(1,i) = Xtrue(N+1);
     Mvec(1,i) = Mmil(N+1);
