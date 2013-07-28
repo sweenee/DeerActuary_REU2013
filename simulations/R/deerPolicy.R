@@ -201,7 +201,7 @@ setwd("C:/Users/Linton/Desktop")
 cat(file = "deerSim.csv", "alpha, gamma, P, Xmean, Xvar, Mmean, Mvar\n", 
     append=FALSE)
 
-for (i in seq(0.01, 0.1, 0.01)) {
+for (i in seq(0.05, 0.1, 0.01)) {
   for (j in seq(0.01, 0.1, 0.01)) {
     for (k in seq(230000, 275000, 5000)) {
       Xapp <- Mapp <- vector(length = 1000)
