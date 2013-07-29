@@ -66,10 +66,15 @@ int main(int argc,char **argv)
    double initialTime =  0.0;
    double finalTime   = 10.0;
    double x[2];
+	 double dW[2];
    int lupe;
    int numberIters;
    int skipPrint = 25;    /* Set this to 4 to print out every fourth value. */
 
+	 /* define some book keeping variables. */
+	 double stochasticIntegral;  // The integral used for the sol. to the pop eqn.
+	 double z;                   // The transformed (linear) sol. to the pop eqn.
+	 double W;                   // The random walk.
 
 	 /* Define the estimated parameters for the problem. */
 	 double r1 = 1.7;     // Deer max reproduction rate
@@ -110,8 +115,6 @@ int main(int argc,char **argv)
    double P;
    double alpha;
    double gamma;
-   double x0 = 1.0;
-   double y0 = 1.0;
 
 
    /* Define the output parameters. */
@@ -155,14 +158,26 @@ int main(int argc,char **argv)
 
 
               /* set the initial conditions. */
-              x[0] = x0;
-              x[1] = y0;
+              x[0] = ftilde;
+              //x[1] = y0; TODO
+							stochasticIntegral = 0.0;
 
               /* Start the loop. */
               for(lupe=0;lupe<numberIters;++lupe)
                 {
                   /* Set the time step. */
                   t = ((double)lupe)*dt;
+
+									/* Calc. two normally distributed random numbers */
+									if(lupe%2==0)
+										randNormal(dW); // calc. a new set of random numbers.
+									else
+										dW[0] = dW[1];  // shift the 2nd number into the first slot.
+									
+									//stochasticIntegral += ; TODO
+									//z = (rtilde/b) + g0*exp((-b*s)-(alpha*W)) + exp((-b*s)-(alpha*W)).*((-alpha*rtilde)/b).*stochasticIntegral; 
+									//x[0] = ;
+									
 								}
 
 						}
