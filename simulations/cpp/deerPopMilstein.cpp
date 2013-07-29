@@ -60,7 +60,8 @@ int main(int argc,char **argv)
 {
 
   /* Define the basic run time variables. */
-   double dt = 1.0e-4;
+   double dt  = 1.0e-4;
+	 double sdt = sqrt(dt);
    double t;
    double initialTime =  0.0;
    double finalTime   = 10.0;
@@ -68,6 +69,24 @@ int main(int argc,char **argv)
    int lupe;
    int numberIters;
    int skipPrint = 25;    /* Set this to 4 to print out every fourth value. */
+
+
+	 /* Define the estimated parameters for the problem. */
+	 double r1 = 1.7;     // Deer max reproduction rate
+	 double h = .16;      // Harvest rate of the deer
+	 double F = 28000;    // Carrying capacity of the deer.
+	 double rho = .04;    // Bond fund rate of growth: log(1+rate); 
+	 double beta = 9;     // cost due to deer collisions .003*3000 */
+	 double g = .05;      // Net target rate of growth of the fund.
+
+	 /* Scaled parameter values. */
+	 double rtilde;      // scaled growth rate
+	 double ftilde;      // scaled carrying capacity
+	 double a;           // exp  exponent for sol. to deep eqn.
+	 double b;           // exp. exponent for integration term
+	 double g0;          // int. constant for deer pop. solution.
+
+
 
    /* define the parameters ranges*/
    double Pmin     = 2000000.0;
@@ -126,6 +145,14 @@ int main(int argc,char **argv)
           for(lupeGamma=0;lupeGamma<=numGamma;++lupeGamma)
             {
               gamma = gammaMin + deltaGamma*((double)lupeGamma);
+
+							/* set the scaled parameters */
+							rtilde = r1-h;            // scaled growth rate
+							ftilde = (rtilde/r1)*F;   // scaled carrying capacity
+							a = (alpha*alpha)-rtilde; // exp  exponent for sol. to deep eqn.
+							b = (0.5*(alpha*alpha))-a;// exp. exponent for integration term
+							g0 = 1.0-(rtilde/b);      // int. constant for deer pop. solution.
+
 
               /* set the initial conditions. */
               x[0] = x0;
