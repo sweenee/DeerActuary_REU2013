@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 /* Helper functions to set command line options. */
 #include <getopt.h>
@@ -69,8 +70,8 @@ int main(int argc,char **argv)
 	 double dW[2];
    int lupe;
 	 int timeLupe;
-	 int numberIters     = 100;
-   int numberTimeSteps = 1000;
+	 int numberIters     = 1000;
+   int numberTimeSteps = 25000;
 
 	 /* define some book keeping variables. */
 	 double stochasticIntegral;  // The integral used for the sol. to the pop eqn.
@@ -96,10 +97,10 @@ int main(int argc,char **argv)
 
    /* define the parameters ranges*/
    double Pmin     = 2000000.0;
-   double alphaMin = 0.0;
-   double gammaMin = 0.0;
+   double alphaMin = 0.1;
+   double gammaMin = 0.1;
 
-   double Pmax     = 250000.0;
+   double Pmax     = 2000000; //250000.0;
    double alphaMax = 0.1;
    double gammaMax = 0.1;
 
@@ -107,9 +108,9 @@ int main(int argc,char **argv)
    double deltaAlpha;
    double deltaGamma;
 
-   int numP     = 10;
-   int numAlpha = 10;
-   int numGamma = 10;
+   int numP     = 1;
+   int numAlpha = 1;
+   int numGamma = 1;
    int lupeP,lupeAlpha,lupeGamma;
 
    /* define the parameters */
@@ -144,7 +145,11 @@ int main(int argc,char **argv)
   printf("Starting iteration. %d iterations.\n",numberTimeSteps);
 #endif
   fp = fopen(outFile,"w");
-  fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
+  //fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
+	fprintf(fp,"x,m\n");
+
+	/* Set the seed for the random number generator. */
+	srand48(time(NULL));
 
 
   for(lupeP=0;lupeP<=numP;++lupeP)
@@ -179,12 +184,12 @@ int main(int argc,char **argv)
 							sumM2 = 0.0;
               for(lupe=0;lupe<numberIters;++lupe)
                 {
-									W = 0.0;
 									/* set the initial conditions. */
-									x[0] = ftilde;
+									W = 0.0;
+									//x[0] = ftilde;
 									//x[1] = y0; TODO
 
-									x[0] = 1.0;
+									x[0] = 0.0;
 									x[1] = 1.0;
 									stochasticIntegral = 0.0;
 
@@ -195,16 +200,18 @@ int main(int argc,char **argv)
 
 											/* Calc. two normally distributed random numbers */
 											if(timeLupe%2==0)
-												randNormal(dW); // calc. a new set of random numbers.
+													randNormal(dW); // calc. a new set of random numbers.
 											else
 												dW[0] = dW[1];  // shift the 2nd number into the first slot.
+											dW[0] *= sdt;
+
 
 											//stochasticIntegral += ; TODO
 											//z = (rtilde/b) + g0*exp((-b*s)-(alpha*W)) + exp((-b*s)-(alpha*W)).*((-alpha*rtilde)/b).*stochasticIntegral; 
 											//x[0] = ;
 
-											x[0] += alpha*W*dW[0];
-											x[1] += rho*x[1]*dt + gamma*x[1]*dW[0];
+											x[0] += W*dW[0] + 0.5*(dW[0]*dW[0]-dt);
+											x[1] += rho*x[1]*dt + gamma*x[1]*dW[0] + 0.5*gamma*gamma*x[1]*(dW[0]*dW[0]-dt);
 											W += dW[0];
 										}
 
@@ -213,8 +220,10 @@ int main(int argc,char **argv)
 									sumX2 += x[0]*x[0];
 									sumM  += x[1]*1.0E-1;
 									sumM2 += x[1]*x[1]*1.0E-2;
+									fprintf(fp,"%f,%f\n",x[0],x[1]);
 								}
 
+							exit(0);
 							//fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
 							fprintf(fp,"%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
 								dt*((float)numberTimeSteps),
