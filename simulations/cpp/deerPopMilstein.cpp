@@ -97,8 +97,8 @@ int main(int argc,char **argv)
 
    /* define the parameters ranges*/
    double Pmin     = 2000000.0;
-   double alphaMin = 0.1;
-   double gammaMin = 0.1;
+   double alphaMin = 0.0;
+   double gammaMin = 0.0;
 
    double Pmax     = 2000000; //250000.0;
    double alphaMax = 0.1;
@@ -108,9 +108,9 @@ int main(int argc,char **argv)
    double deltaAlpha;
    double deltaGamma;
 
-   int numP     = 1;
-   int numAlpha = 1;
-   int numGamma = 1;
+   int numP     = 10;
+   int numAlpha = 10;
+   int numGamma = 10;
    int lupeP,lupeAlpha,lupeGamma;
 
    /* define the parameters */
@@ -145,8 +145,7 @@ int main(int argc,char **argv)
   printf("Starting iteration. %d iterations.\n",numberTimeSteps);
 #endif
   fp = fopen(outFile,"w");
-  //fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
-	fprintf(fp,"x,m\n");
+  fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
 
 	/* Set the seed for the random number generator. */
 	srand48(time(NULL));
@@ -220,10 +219,8 @@ int main(int argc,char **argv)
 									sumX2 += x[0]*x[0];
 									sumM  += x[1]*1.0E-1;
 									sumM2 += x[1]*x[1]*1.0E-2;
-									fprintf(fp,"%f,%f\n",x[0],x[1]);
 								}
 
-							exit(0);
 							//fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
 							fprintf(fp,"%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
 								dt*((float)numberTimeSteps),
