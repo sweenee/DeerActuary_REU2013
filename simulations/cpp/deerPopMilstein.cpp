@@ -100,7 +100,7 @@ int main(int argc,char **argv)
    double alphaMin = 0.0;
    double gammaMin = 0.0;
 
-   double Pmax     = 2000000; //250000.0;
+   double Pmax     = 250000.0;
    double alphaMax = 0.1;
    double gammaMax = 0.1;
 
