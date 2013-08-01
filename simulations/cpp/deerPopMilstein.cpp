@@ -173,7 +173,7 @@ int main(int argc,char **argv)
 									/* set the initial conditions. */
 									W    = 0.0;
 									m[0] = ftilde;
-									m[1] = 25000.0; // TODO - fix this!
+									m[1] = (P-beta*ftilde)/(g-rho);
 									stochasticIntegral = 0.0;
 
 									for(timeLupe=0;timeLupe<numberTimeSteps;++timeLupe)
@@ -194,6 +194,8 @@ int main(int argc,char **argv)
 											z = rtilde/a - g0*exp(-a*t-alpha*W) -
 												((alpha*rtilde)/a)*exp(-a*t-alpha*W)*stochasticIntegral; 
 											m[0] = ftilde/z;
+											m[1] += (rho*m[1]+P-beta*m[0])*dt - beta*m[0]*dW[0] 
+												- 0.5*alpha*beta*m[0]*(dW[0]*dW[0]-dt);
 
 											W += dW[0];
 										}
