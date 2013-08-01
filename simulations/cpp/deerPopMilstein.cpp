@@ -131,8 +131,7 @@ int main(int argc,char **argv)
   printf("Starting iteration. %d iterations.\n",numberTimeSteps);
 #endif
   fp = fopen(outFile,"w");
-  //fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
-  fprintf(fp,"time,z,x,int\n");
+  fprintf(fp,"time,P,alpha,gamma,x,m,sumx,sumx2,summ,summ2,N\n");
 
 	/* Set the seed for the random number generator. */
 	srand48(time(NULL));
@@ -142,7 +141,7 @@ int main(int argc,char **argv)
     {
       P = Pmin + deltaP*((double)lupeP);
 
-      for(lupeAlpha=0;lupeAlpha<=numAlpha;++lupeAlpha)
+      for(lupeAlpha=0;lupeAlpha<=numAlpha;++lupeAlpha) 
         {
           alpha = alphaMin + deltaAlpha*((double)lupeAlpha);
 
@@ -152,8 +151,8 @@ int main(int argc,char **argv)
 
 #ifdef DEBUG
 							/* print a notice */
-							//printf("%f,%f,%f,%f\n",
-							//			 dt*((float)numberTimeSteps),P,alpha,gamma);
+							printf("%f,%f,%f,%f\n",
+										 dt*((float)numberTimeSteps),P,alpha,gamma);
 #endif
 
 							/* set the scaled parameters */
@@ -195,13 +194,9 @@ int main(int argc,char **argv)
 											z = rtilde/a - g0*exp(-a*t-alpha*W) -
 												((alpha*rtilde)/a)*exp(-a*t-alpha*W)*stochasticIntegral; 
 											m[0] = ftilde/z;
-											fprintf(fp,"%f,%f,%f,%f\n",t,z,m[0],stochasticIntegral);
 
 											W += dW[0];
 										}
-	fclose(fp);
-	return(0);
-
 
 									// Update the tally used for the statistical ensemble
 									sumX  += m[0];
@@ -210,10 +205,10 @@ int main(int argc,char **argv)
 									sumM2 += m[1]*m[1]*1.0E-2;
 								}
 
-							//fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
-							fprintf(fp,"%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
+							//  fprintf(fp,"time,P,alpha,gamma,x,m,sumx,sumx2,summ,summ2,N\n");
+							fprintf(fp,"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
 								dt*((float)numberTimeSteps),
-								P,alpha,gamma,sumX,sumX2,sumM,sumM2,numberIters);
+											P,alpha,gamma,m[0],m[1],sumX,sumX2,sumM,sumM2,numberIters);
 
 
 						}
