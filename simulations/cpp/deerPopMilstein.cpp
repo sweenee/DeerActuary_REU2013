@@ -43,19 +43,6 @@ inline void randNormal(double nu[]) {
 
 
 
-/* The function to evaluate for the differential equation. */
-inline void functionEvaluation(double t, 
-															 double *x, 
-															 double *result,
-															 double dt,
-															 double dw,
-															 double P,
-															 double alpha,
-															 double gamma)
-{
-  result[0] = x[0]*(1.0-x[1]);
-  result[1] = x[1]-x[0];
-}
 
 int main(int argc,char **argv)
 {
@@ -66,7 +53,7 @@ int main(int argc,char **argv)
 	 double t;
    double initialTime =  0.0;
    double finalTime   = 10.0;
-   double x[2];
+   double m[2];
 	 double dW[2];
    int lupe;
 	 int timeLupe;
@@ -90,7 +77,6 @@ int main(int argc,char **argv)
 	 double rtilde;      // scaled growth rate
 	 double ftilde;      // scaled carrying capacity
 	 double a;           // exp  exponent for sol. to deep eqn.
-	 double b;           // exp. exponent for integration term
 	 double g0;          // int. constant for deer pop. solution.
 
 
@@ -145,7 +131,8 @@ int main(int argc,char **argv)
   printf("Starting iteration. %d iterations.\n",numberTimeSteps);
 #endif
   fp = fopen(outFile,"w");
-  fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
+  //fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
+  fprintf(fp,"time,z,x,int\n");
 
 	/* Set the seed for the random number generator. */
 	srand48(time(NULL));
@@ -165,16 +152,17 @@ int main(int argc,char **argv)
 
 #ifdef DEBUG
 							/* print a notice */
-							printf("%f,%f,%f,%f\n",
-										 dt*((float)numberTimeSteps),P,alpha,gamma);
+							//printf("%f,%f,%f,%f\n",
+							//			 dt*((float)numberTimeSteps),P,alpha,gamma);
 #endif
 
 							/* set the scaled parameters */
-							rtilde = r1-h;            // scaled growth rate
-							ftilde = (rtilde/r1)*F;   // scaled carrying capacity
-							a = (alpha*alpha)-rtilde; // exp  exponent for sol. to deep eqn.
-							b = (0.5*(alpha*alpha))-a;// exp. exponent for integration term
-							g0 = 1.0-(rtilde/b);      // int. constant for deer pop. solution.
+							rtilde = r1-h;                     // scaled growth rate
+							ftilde = (rtilde/r1)*F;            // scaled carrying capacity
+							a      = rtilde-0.5*(alpha*alpha); // exp  exponent for sol. to deep eqn.
+							g0     = 0.5*alpha*alpha/a;        // int. constant for deer pop. solution.
+							// todo - keep track of 1/a. 
+							// keep track of exp(*) or factor it out appropriately?
 
               /* Start the loop. */
 							sumX  = 0.0;
@@ -184,12 +172,9 @@ int main(int argc,char **argv)
               for(lupe=0;lupe<numberIters;++lupe)
                 {
 									/* set the initial conditions. */
-									W = 0.0;
-									//x[0] = ftilde;
-									//x[1] = y0; TODO
-
-									x[0] = 0.0;
-									x[1] = 1.0;
+									W    = 0.0;
+									m[0] = ftilde;
+									m[1] = 25000.0; // TODO - fix this!
 									stochasticIntegral = 0.0;
 
 									for(timeLupe=0;timeLupe<numberTimeSteps;++timeLupe)
@@ -201,24 +186,28 @@ int main(int argc,char **argv)
 											if(timeLupe%2==0)
 													randNormal(dW); // calc. a new set of random numbers.
 											else
-												dW[0] = dW[1];  // shift the 2nd number into the first slot.
-											dW[0] *= sdt;
+												dW[0] = dW[1];    // shift the 2nd number into the first slot.
+											dW[0] *= sdt;       // scale the change in W to have the proper variance.
 
+											// Update the integral and then update the population and fund balance.
+											stochasticIntegral += exp(a*t+alpha*W)*dW[0] +
+												0.5*alpha*exp(a*t+alpha*W)*(dW[0]*dW[0]-dt);
+											z = rtilde/a - g0*exp(-a*t-alpha*W) -
+												((alpha*rtilde)/a)*exp(-a*t-alpha*W)*stochasticIntegral; 
+											m[0] = ftilde/z;
+											fprintf(fp,"%f,%f,%f,%f\n",t,z,m[0],stochasticIntegral);
 
-											//stochasticIntegral += ; TODO
-											//z = (rtilde/b) + g0*exp((-b*s)-(alpha*W)) + exp((-b*s)-(alpha*W)).*((-alpha*rtilde)/b).*stochasticIntegral; 
-											//x[0] = ;
-
-											x[0] += W*dW[0] + 0.5*(dW[0]*dW[0]-dt);
-											x[1] += rho*x[1]*dt + gamma*x[1]*dW[0] + 0.5*gamma*gamma*x[1]*(dW[0]*dW[0]-dt);
 											W += dW[0];
 										}
+	fclose(fp);
+	return(0);
+
 
 									// Update the tally used for the statistical ensemble
-									sumX  += x[0];
-									sumX2 += x[0]*x[0];
-									sumM  += x[1]*1.0E-1;
-									sumM2 += x[1]*x[1]*1.0E-2;
+									sumX  += m[0];
+									sumX2 += m[0]*m[0];
+									sumM  += m[1]*1.0E-1;
+									sumM2 += m[1]*m[1]*1.0E-2;
 								}
 
 							//fprintf(fp,"time,P,alpha,gamma,sumx,sumx2,summ,summ2,N\n");
