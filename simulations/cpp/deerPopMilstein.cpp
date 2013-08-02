@@ -24,7 +24,13 @@
 	 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 	 SOFTWARE.
 
-***************************************************************** */
+	 *****************************************************************
+
+	 Code to run a Monte Carlo simulation of the systems of equations
+	 representing the population of deer in one area and the associated
+	 funds in an account to offset insurance liabilities.
+
+	 ***************************************************************** */
 
 
 #include <stdio.h>
@@ -38,19 +44,6 @@
 
 #define DEFAULT_FILE "trial.csv"
 #define DEBUG
-
-/* Check to see if the order is right between min and max. */
-void checkOrder(double *theMin,double *theMax)
-{
-  double tmp;
-  if(*theMax < *theMin)
-    {
-      tmp     = *theMax;
-      *theMax = *theMin;
-      *theMin = tmp;
-    }
-
-}
 
 /* Routine to calculate the step size for a given range and number of iterations. */
 double calcDelta(double theMin,double theMax,int number)
@@ -95,12 +88,12 @@ int main(int argc,char **argv)
 	 double W;                   // The random walk.
 
 	 /* Define the estimated parameters for the problem. */
-	 double r1 = 1.7;     // Deer max reproduction rate
-	 double h = .16;      // Harvest rate of the deer
-	 double F = 28000;    // Carrying capacity of the deer.
-	 double rho = .04;    // Bond fund rate of growth: log(1+rate); 
-	 double beta = 9;     // cost due to deer collisions .003*3000 */
-	 double g = .05;      // Net target rate of growth of the fund.
+	 double r1   = 1.7;      // Deer max reproduction rate
+	 double h    = 0.16;     // Harvest rate of the deer
+	 double F    = 28000.0;  // Carrying capacity of the deer.
+	 double rho  = 0.04;     // Bond fund rate of growth: log(1+rate); 
+	 double beta = 9.0;      // cost due to deer collisions .003*3000 */
+	 double g    = 0.05;     // Net target rate of growth of the fund.
 
 	 /* Scaled parameter values. */
 	 double rtilde;      // scaled growth rate
@@ -111,10 +104,10 @@ int main(int argc,char **argv)
 
 
    /* define the parameters ranges*/
-   double Pmin     = 2000000.0;
+   double Pmin     = 430000.0;
    double alphaMin = 0.0;
 
-   double Pmax     = 250000.0;
+   double Pmax     = 530000.0;
    double alphaMax = 0.1;
 
    double deltaP;
