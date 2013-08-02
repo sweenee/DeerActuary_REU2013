@@ -1,0 +1,112 @@
+\documentclass[12pt]{article}
+\usepackage{hyperref}
+\usepackage{ifpdf}
+\usepackage{natbib}
+
+
+\ifpdf 
+   \pdfcompresslevel=9
+   \pdfoutput=1
+                                                                                      
+      
+                       
+   \usepackage[pdftex]{graphicx}
+   \usepackage[pdftex]{geometry}
+   \usepackage[pdftex]{color}
+   \usepackage{hyperref}
+   \hypersetup{
+     pdftitle={A Stochastic Model of a Local Deer Population and
+       Associated Bond Fund},
+     pdfsubject={ODE},
+     pdfauthor={Kelly Black, Candace Liu, Lindong Zhou, Elizabeth Sweeney},
+     pdfkeywords={Logistic Equation, Stochastic Differential
+       Equations,Bond Funds},
+     anchorcolor = {red},
+     colorlinks = {true},
+     %pdfpagemode={FullScreen}
+   }
+\else
+   \usepackage{epsfig}
+   \usepackage{color}
+\fi
+
+
+\makeatletter
+\renewcommand{\section}{\@startsection
+  {section}
+  {1}
+  {0em}
+  {\baselineskip}
+  {-1em}
+  {\normalfont\normalsize\bfseries}}
+
+\renewcommand{\subsection}{\@startsection
+  {subsection}
+  {2}
+  {0em}
+  {\baselineskip}
+  {-1em}
+  {\normalfont\normalsize\bfseries}}
+
+\renewcommand{\subsubsection}{\@startsection
+  {subsubsection}
+  {2}
+  {0em}
+  {\baselineskip}
+  {-2em}
+  {\normalfont\normalsize\itshape}}
+
+\renewcommand{\thesection}{\@arabic\c@section}
+\renewcommand{\thesubsection}{\thesection.\@arabic\c@subsection}
+\renewcommand{\thesubsubsection}{\thesubsection .\@arabic\c@subsubsection}
+
+\makeatother
+
+\setcounter{secnumdepth}{0}
+
+
+\begin{document}
+
+\begin{center}
+  \textbf{A Stochastic Model of a Local Deer Population and Associated Bond Fund} \\
+  Kelly Black\footnote{Clarkson University, Department of Mathematics
+    and Computer Science, \texttt{kjblack@gmail.com}},
+    Candace Liu\footnote{Clarkson University, Department of Mathematics
+      and Computer Science, \texttt{liucg@clarkson.edu}},
+    Lindong Zhou\footnote{Middlebury College, Department of Mathematics, 
+      \texttt{lindongz@middlebury.edu}}, 
+    Elizabeth Sweeney\footnote{The College of New Jersey, Department of Mathematics, 
+      \texttt{sweenee1@tcnj.edu}}
+\end{center}
+
+
+\begin{abstract}
+\end{abstract}
+
+
+Keywords: Logistic Equation, Stochastic Differential Equations,Bond Funds
+
+
+\input{introduction}
+
+\input{harvest}
+
+\input{modeling}
+
+\input{monteCarlo}
+
+\input{results}
+
+\input{conclusions}
+
+\bibliographystyle{chicago}
+\bibliography{sde}
+
+
+
+\end{document}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: t
+%%% End: 
