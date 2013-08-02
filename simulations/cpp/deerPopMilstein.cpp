@@ -146,6 +146,8 @@ int main(int argc,char **argv)
 #ifdef DEBUG
   printf("Starting iteration. %d iterations.\n",numberTimeSteps);
 #endif
+
+	/* Open the output file and print out the header. */
   fp = fopen(outFile,"w");
   fprintf(fp,"time,P,alpha,x,m,sumx,sumx2,summ,summ2,N\n");
 
@@ -153,6 +155,7 @@ int main(int argc,char **argv)
 	srand48(time(NULL));
 
 
+	/* Go through and run the simulations for all possible values of the parameters. */
   for(lupeP=0;lupeP<=numP;++lupeP)
     {
       P = Pmin + deltaP*((double)lupeP);
@@ -168,7 +171,7 @@ int main(int argc,char **argv)
 								 dt*((float)numberTimeSteps),P,alpha);
 #endif
 
-					/* set the scaled parameters */
+					/* Determine and set the scaled parameters */
 					rtilde = r1-h;                     // scaled growth rate
 					ftilde = (rtilde/r1)*F;            // scaled carrying capacity
 					a      = rtilde-0.5*(alpha*alpha); // exp  exponent for sol. to deep eqn.
@@ -176,7 +179,7 @@ int main(int argc,char **argv)
 					// todo - keep track of 1/a. 
 					// keep track of exp(*) or factor it out appropriately?
 
-					/* Start the loop. */
+					/* Start the loop for the multiple simulations. */
 					sumX  = 0.0;
 					sumX2 = 0.0;
 					sumM  = 0.0;
@@ -202,10 +205,10 @@ int main(int argc,char **argv)
 									dW[0] *= sdt;       // scale the change in W to have the proper variance.
 
 									// Update the integral and then update the population and fund balance.
-									stochasticIntegral += exp(a*t+alpha*W)*dW[0] +
-										0.5*alpha*exp(a*t+alpha*W)*(dW[0]*dW[0]-dt);
-									z = rtilde/a - g0*exp(-a*t-alpha*W) -
-										((alpha*rtilde)/a)*exp(-a*t-alpha*W)*stochasticIntegral; 
+									stochasticIntegral += 
+										exp(a*t+alpha*W)*(dW[0] + 0.5*alpha*(dW[0]*dW[0]-dt));
+									z = rtilde/a - 
+										exp(-a*t-alpha*W)*(g0 + ((alpha*rtilde)/a)*stochasticIntegral); 
 									m[0] = ftilde/z;
 									m[1] += (rho*m[1]+P-beta*m[0])*dt - beta*m[0]*dW[0] 
 										- 0.5*alpha*beta*m[0]*(dW[0]*dW[0]-dt);
