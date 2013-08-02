@@ -113,25 +113,20 @@ int main(int argc,char **argv)
    /* define the parameters ranges*/
    double Pmin     = 2000000.0;
    double alphaMin = 0.0;
-   double gammaMin = 0.0;
 
    double Pmax     = 250000.0;
    double alphaMax = 0.1;
-   double gammaMax = 0.1;
 
    double deltaP;
    double deltaAlpha;
-   double deltaGamma;
 
    int numP     = 10;
    int numAlpha = 10;
-   int numGamma = 10;
-   int lupeP,lupeAlpha,lupeGamma;
+   int lupeP,lupeAlpha;
 
    /* define the parameters */
    double P;
    double alpha;
-   double gamma;
 
 	 /* Statistical values */
 	 float sumX  = 0.0;
@@ -150,7 +145,6 @@ int main(int argc,char **argv)
   /* Set the step values for the parameters. */
   deltaP     = calcDelta(Pmin,Pmax,numP);
   deltaAlpha = calcDelta(alphaMin,alphaMax,numAlpha);
-  deltaGamma = calcDelta(gammaMin,gammaMax,numGamma);
 
   /* Set the number of iterations used in the main loop. */
   dt  = ((finalTime-initialTime)/((float)numberTimeSteps));
@@ -160,7 +154,7 @@ int main(int argc,char **argv)
   printf("Starting iteration. %d iterations.\n",numberTimeSteps);
 #endif
   fp = fopen(outFile,"w");
-  fprintf(fp,"time,P,alpha,gamma,x,m,sumx,sumx2,summ,summ2,N\n");
+  fprintf(fp,"time,P,alpha,x,m,sumx,sumx2,summ,summ2,N\n");
 
 	/* Set the seed for the random number generator. */
 	srand48(time(NULL));
@@ -174,75 +168,70 @@ int main(int argc,char **argv)
         {
           alpha = alphaMin + deltaAlpha*((double)lupeAlpha);
 
-          for(lupeGamma=0;lupeGamma<=numGamma;++lupeGamma)
-            {
-              gamma = gammaMin + deltaGamma*((double)lupeGamma);
 
 #ifdef DEBUG
-							/* print a notice */
-							printf("%f,%f,%f,%f\n",
-										 dt*((float)numberTimeSteps),P,alpha,gamma);
+					/* print a notice */
+					printf("%f,%f,%f,%f\n",
+								 dt*((float)numberTimeSteps),P,alpha);
 #endif
 
-							/* set the scaled parameters */
-							rtilde = r1-h;                     // scaled growth rate
-							ftilde = (rtilde/r1)*F;            // scaled carrying capacity
-							a      = rtilde-0.5*(alpha*alpha); // exp  exponent for sol. to deep eqn.
-							g0     = 0.5*alpha*alpha/a;        // int. constant for deer pop. solution.
-							// todo - keep track of 1/a. 
-							// keep track of exp(*) or factor it out appropriately?
+					/* set the scaled parameters */
+					rtilde = r1-h;                     // scaled growth rate
+					ftilde = (rtilde/r1)*F;            // scaled carrying capacity
+					a      = rtilde-0.5*(alpha*alpha); // exp  exponent for sol. to deep eqn.
+					g0     = 0.5*alpha*alpha/a;        // int. constant for deer pop. solution.
+					// todo - keep track of 1/a. 
+					// keep track of exp(*) or factor it out appropriately?
 
-              /* Start the loop. */
-							sumX  = 0.0;
-							sumX2 = 0.0;
-							sumM  = 0.0;
-							sumM2 = 0.0;
-              for(lupe=0;lupe<numberIters;++lupe)
-                {
-									/* set the initial conditions. */
-									W    = 0.0;
-									m[0] = ftilde;
-									m[1] = (P-beta*ftilde)/(g-rho);
-									stochasticIntegral = 0.0;
+					/* Start the loop. */
+					sumX  = 0.0;
+					sumX2 = 0.0;
+					sumM  = 0.0;
+					sumM2 = 0.0;
+					for(lupe=0;lupe<numberIters;++lupe)
+						{
+							/* set the initial conditions. */
+							W    = 0.0;
+							m[0] = ftilde;
+							m[1] = (P-beta*ftilde)/(g-rho);
+							stochasticIntegral = 0.0;
 
-									for(timeLupe=0;timeLupe<numberTimeSteps;++timeLupe)
-										{
-											/* Set the time step. */
-											t = ((double)timeLupe)*dt;
+							for(timeLupe=0;timeLupe<numberTimeSteps;++timeLupe)
+								{
+									/* Set the time step. */
+									t = ((double)timeLupe)*dt;
 
-											/* Calc. two normally distributed random numbers */
-											if(timeLupe%2==0)
-													randNormal(dW); // calc. a new set of random numbers.
-											else
-												dW[0] = dW[1];    // shift the 2nd number into the first slot.
-											dW[0] *= sdt;       // scale the change in W to have the proper variance.
+									/* Calc. two normally distributed random numbers */
+									if(timeLupe%2==0)
+										randNormal(dW); // calc. a new set of random numbers.
+									else
+										dW[0] = dW[1];    // shift the 2nd number into the first slot.
+									dW[0] *= sdt;       // scale the change in W to have the proper variance.
 
-											// Update the integral and then update the population and fund balance.
-											stochasticIntegral += exp(a*t+alpha*W)*dW[0] +
-												0.5*alpha*exp(a*t+alpha*W)*(dW[0]*dW[0]-dt);
-											z = rtilde/a - g0*exp(-a*t-alpha*W) -
-												((alpha*rtilde)/a)*exp(-a*t-alpha*W)*stochasticIntegral; 
-											m[0] = ftilde/z;
-											m[1] += (rho*m[1]+P-beta*m[0])*dt - beta*m[0]*dW[0] 
-												- 0.5*alpha*beta*m[0]*(dW[0]*dW[0]-dt);
+									// Update the integral and then update the population and fund balance.
+									stochasticIntegral += exp(a*t+alpha*W)*dW[0] +
+										0.5*alpha*exp(a*t+alpha*W)*(dW[0]*dW[0]-dt);
+									z = rtilde/a - g0*exp(-a*t-alpha*W) -
+										((alpha*rtilde)/a)*exp(-a*t-alpha*W)*stochasticIntegral; 
+									m[0] = ftilde/z;
+									m[1] += (rho*m[1]+P-beta*m[0])*dt - beta*m[0]*dW[0] 
+										- 0.5*alpha*beta*m[0]*(dW[0]*dW[0]-dt);
 
-											W += dW[0];
-										}
-
-									// Update the tally used for the statistical ensemble
-									sumX  += m[0];
-									sumX2 += m[0]*m[0];
-									sumM  += m[1]*1.0E-1;
-									sumM2 += m[1]*m[1]*1.0E-2;
+									W += dW[0];
 								}
 
-							//  fprintf(fp,"time,P,alpha,gamma,x,m,sumx,sumx2,summ,summ2,N\n");
-							fprintf(fp,"%f,%f,%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
-								dt*((float)numberTimeSteps),
-											P,alpha,gamma,m[0],m[1],sumX,sumX2,sumM,sumM2,numberIters);
-
-
+							// Update the tally used for the statistical ensemble
+							sumX  += m[0];
+							sumX2 += m[0]*m[0];
+							sumM  += m[1]*1.0E-1;
+							sumM2 += m[1]*m[1]*1.0E-2;
 						}
+
+					//  fprintf(fp,"time,P,alpha,x,m,sumx,sumx2,summ,summ2,N\n");
+					fprintf(fp,"%f,%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
+									dt*((float)numberTimeSteps),
+									P,alpha,m[0],m[1],sumX,sumX2,sumM,sumM2,numberIters);
+
 
 				}
 
