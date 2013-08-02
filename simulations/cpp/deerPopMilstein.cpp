@@ -79,8 +79,8 @@ int main(int argc,char **argv)
 	 double dW[2];
    int lupe;
 	 int timeLupe;
-	 int numberIters     = 1000;
-   int numberTimeSteps = 25000;
+	 int numberIters     = 100000;
+   int numberTimeSteps = 1000000;
 
 	 /* define some book keeping variables. */
 	 double stochasticIntegral;  // The integral used for the sol. to the pop eqn.
@@ -108,13 +108,13 @@ int main(int argc,char **argv)
    double alphaMin = 0.0;
 
    double Pmax     = 530000.0;
-   double alphaMax = 0.1;
+   double alphaMax = 0.15;
 
    double deltaP;
    double deltaAlpha;
 
-   int numP     = 10;
-   int numAlpha = 10;
+   int numP     = 1000;
+   int numAlpha = 1000;
    int lupeP,lupeAlpha;
 
    /* define the parameters */
