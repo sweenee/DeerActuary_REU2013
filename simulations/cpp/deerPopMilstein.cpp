@@ -150,6 +150,7 @@ int main(int argc,char **argv)
 	/* Open the output file and print out the header. */
   fp = fopen(outFile,"w");
   fprintf(fp,"time,P,alpha,x,m,sumx,sumx2,summ,summ2,N\n");
+	//fprintf(fp,"time,x,m\n");
 
 	/* Set the seed for the random number generator. */
 	srand48(time(NULL));
@@ -167,7 +168,7 @@ int main(int argc,char **argv)
 
 #ifdef DEBUG
 					/* print a notice */
-					printf("%f,%f,%f,%f\n",
+					printf("%f,%f,%f\n",
 								 dt*((float)numberTimeSteps),P,alpha);
 #endif
 
@@ -213,8 +214,11 @@ int main(int argc,char **argv)
 									m[1] += (rho*m[1]+P-beta*m[0])*dt - beta*m[0]*dW[0] 
 										- 0.5*alpha*beta*m[0]*(dW[0]*dW[0]-dt);
 
+									//fprintf(fp,"%f,%f,%f\n",t,m[0],m[1]);
+
 									W += dW[0];
 								}
+							//fprintf(fp,"%f,%f,%f\n",t,m[0],m[1]);
 
 							// Update the tally used for the statistical ensemble
 							sumX  += m[0];
