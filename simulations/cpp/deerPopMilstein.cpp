@@ -88,12 +88,12 @@ int main(int argc,char **argv)
 	 double W;                   // The random walk.
 
 	 /* Define the estimated parameters for the problem. */
-	 double r1   = 0.053;    // Deer max reproduction rate
-	 double h    = 0.16;     // Harvest rate of the deer
-	 double F    = 28000.0;  // Carrying capacity of the deer.
-	 double rho  = 0.04;     // Bond fund rate of growth: log(1+rate); 
-	 double beta = 9.0;      // cost due to deer collisions .003*3000 */
-	 double g    = 0.05;     // Net target rate of growth of the fund.
+	 double r1   = log(1.702); // Deer max reproduction rate
+	 double h    = log(1.16);  // Harvest rate of the deer
+	 double F    = 28000.0;    // Carrying capacity of the deer.
+	 double rho  = 0.04;       // Bond fund rate of growth: log(1+rate); 
+	 double beta = 9.0;        // cost due to deer collisions .003*3000 */
+	 double g    = 0.05;       // Net target rate of growth of the fund.
 
 	 /* Scaled parameter values. */
 	 double rtilde;      // scaled growth rate
