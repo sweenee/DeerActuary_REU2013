@@ -32,8 +32,10 @@
 
 	 ***************************************************************** */
 
+#include <fstream>
+#include <iostream>
+#include <thread>
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
@@ -42,150 +44,70 @@
 #include <getopt.h>
 #include <string.h>
 
-#define DEFAULT_FILE "trial.csv"
+#define DEFAULT_FILE "threaded_trial.csv"
+#define NUMBER_THREADS = 3;
 #define DEBUG
 
 /* Routine to calculate the step size for a given range and number of iterations. */
 double calcDelta(double theMin,double theMax,int number)
 {
-  return((theMax-theMin)/((double)number));
+	return((theMax-theMin)/((double)number));
 }
 
 
 
 
 /* Routine to generate two normally distributed random numbers */
-inline void randNormal(double nu[]) {
-  double tmp = sqrt(-2.0*log(drand48()));
-  double trig = 2.0*M_PI*drand48();
-  nu[0] = tmp*sin(trig);
-  nu[1] = tmp*cos(trig);
+inline void randNormal(double nu[]) 
+{
+	double tmp = sqrt(-2.0*log(drand48()));
+	double trig = 2.0*M_PI*drand48();
+	nu[0] = tmp*sin(trig);
+	nu[1] = tmp*cos(trig);
 }
 
 
 
-
-
-int main(int argc,char **argv)
+void samplePath(double P,double alpha,double beta,
+									double r1,double h,double F,
+									double rho,double g,
+									int numberIters,
+									double dt,
+									double sdt,
+									int numberTimeSteps,
+									std::ofstream& dataFile)
 {
 
-  /* Define the basic run time variables. */
-	 double dt;
-	 double sdt;
-	 double t;
-   double initialTime =  0.0;
-   double finalTime   = 10.0;
-   double m[2];
-	 double dW[2];
-   int lupe;
-	 int timeLupe;
-	 int numberIters     = 100000;
-   int numberTimeSteps = 1000000;
+	/* Run time parameters */
+	int timeLupe;
+	double t;
 
-	 /* define some book keeping variables. */
-	 double stochasticIntegral;  // The integral used for the sol. to the pop eqn.
-	 double z;                   // The transformed (linear) sol. to the pop eqn.
-	 double W;                   // The random walk.
+	double m[2];
+	double dW[2];
 
-	 /* Define the estimated parameters for the problem. */
-	 double r1   = log(1.702); // Deer max reproduction rate
-	 double h    = log(1.16);  // Harvest rate of the deer
-	 double F    = 28000.0;    // Carrying capacity of the deer.
-	 double rho  = 0.04;       // Bond fund rate of growth: log(1+rate); 
-	 double beta = 9.0;        // cost due to deer collisions .003*3000 */
-	 double g    = 0.05;       // Net target rate of growth of the fund.
-
-	 /* Scaled parameter values. */
-	 double rtilde;      // scaled growth rate
-	 double ftilde;      // scaled carrying capacity
-	 double a;           // exp  exponent for sol. to deep eqn.
-	 double g0;          // int. constant for deer pop. solution.
+	double stochasticIntegral;  // The integral used for the sol. to the pop eqn.
+	double z;                   // The transformed (linear) sol. to the pop eqn.
+	double W;                   // The random walk.
 
 
-
-   /* define the parameters ranges*/
-   double Pmin     = 430000.0;
-   double alphaMin = 0.0;
-
-   double Pmax     = 530000.0;
-   double alphaMax = 0.15;
-
-   double deltaP;
-   double deltaAlpha;
-
-   int numP     = 1000;
-   int numAlpha = 1000;
-   int lupeP,lupeAlpha;
-
-   /* define the parameters */
-   double P;
-   double alpha;
-
-	 /* Statistical values */
-	 float sumX  = 0.0;
-	 float sumX2 = 0.0;
-	 float sumM  = 0.0;
-	 float sumM2 = 0.0;
+	 /* Determine and set the scaled parameters */
+	 double rtilde = r1-h;                     // scaled growth rate
+	 double ftilde = (rtilde/r1)*F;            // scaled carrying capacity
+	 double a      = rtilde-0.5*(alpha*alpha); // exp  exponent for sol. to deep eqn.
+	 double g0     = 0.5*alpha*alpha/a;        // int. constant for deer pop. solution.
+	 // todo - keep track of 1/a. 
+	 // keep track of exp(*) or factor it out appropriately?
 
 
-   /* Define the output parameters. */
-   char outFile[1024];
-   strcpy(outFile,DEFAULT_FILE);
+	/* Start the loop for the multiple simulations. */
+	double sumX  = 0.0;
+	double sumX2 = 0.0;
+	double sumM  = 0.0;
+	double sumM2 = 0.0;
+	int lupe;
 
-  /* File stuff */
-  FILE *fp;
-
-  /* Set the step values for the parameters. */
-  deltaP     = calcDelta(Pmin,Pmax,numP);
-  deltaAlpha = calcDelta(alphaMin,alphaMax,numAlpha);
-
-  /* Set the number of iterations used in the main loop. */
-  dt  = ((finalTime-initialTime)/((float)numberTimeSteps));
-	sdt = sqrt(dt);
-
-#ifdef DEBUG
-  printf("Starting iteration. %d iterations.\n",numberTimeSteps);
-#endif
-
-	/* Open the output file and print out the header. */
-  fp = fopen(outFile,"w");
-  fprintf(fp,"time,P,alpha,x,m,sumx,sumx2,summ,summ2,N\n");
-	//fprintf(fp,"time,x,m\n");
-
-	/* Set the seed for the random number generator. */
-	srand48(time(NULL));
-
-
-	/* Go through and run the simulations for all possible values of the parameters. */
-  for(lupeP=0;lupeP<=numP;++lupeP)
-    {
-      P = Pmin + deltaP*((double)lupeP);
-
-      for(lupeAlpha=0;lupeAlpha<=numAlpha;++lupeAlpha) 
-        {
-          alpha = alphaMin + deltaAlpha*((double)lupeAlpha);
-
-
-#ifdef DEBUG
-					/* print a notice */
-					printf("%f,%f,%f\n",
-								 dt*((float)numberTimeSteps),P,alpha);
-#endif
-
-					/* Determine and set the scaled parameters */
-					rtilde = r1-h;                     // scaled growth rate
-					ftilde = (rtilde/r1)*F;            // scaled carrying capacity
-					a      = rtilde-0.5*(alpha*alpha); // exp  exponent for sol. to deep eqn.
-					g0     = 0.5*alpha*alpha/a;        // int. constant for deer pop. solution.
-					// todo - keep track of 1/a. 
-					// keep track of exp(*) or factor it out appropriately?
-
-					/* Start the loop for the multiple simulations. */
-					sumX  = 0.0;
-					sumX2 = 0.0;
-					sumM  = 0.0;
-					sumM2 = 0.0;
-					for(lupe=0;lupe<numberIters;++lupe)
+	randNormal(dW); // calc. the initial set of random numbers.
+	for(lupe=0;lupe<numberIters;++lupe)
 						{
 							/* set the initial conditions. */
 							W    = 0.0;
@@ -214,11 +136,8 @@ int main(int argc,char **argv)
 									m[1] += (rho*m[1]+P-beta*m[0])*dt - beta*m[0]*dW[0] 
 										- 0.5*alpha*beta*m[0]*(dW[0]*dW[0]-dt);
 
-									//fprintf(fp,"%f,%f,%f\n",t,m[0],m[1]);
-
 									W += dW[0];
 								}
-							//fprintf(fp,"%f,%f,%f\n",t,m[0],m[1]);
 
 							// Update the tally used for the statistical ensemble
 							sumX  += m[0];
@@ -227,17 +146,115 @@ int main(int argc,char **argv)
 							sumM2 += m[1]*m[1]*1.0E-2;
 						}
 
-					//  fprintf(fp,"time,P,alpha,x,m,sumx,sumx2,summ,summ2,N\n");
-					fprintf(fp,"%f,%f,%f,%f,%f,%f,%f,%f,%f,%d\n",
-									dt*((float)numberTimeSteps),
-									P,alpha,m[0],m[1],sumX,sumX2,sumM,sumM2,numberIters);
+	dataFile << dt*((double)numberTimeSteps) << "," 
+					 << P << "," 
+					 << alpha << "," 
+					 << m[0] << "," << m[1] << "," 
+					 << sumX << "," << sumX2 << "," 
+					 << sumM << "," << sumM2 << "," 
+					 << numberIters << std::endl;
+	dataFile.flush();
 
+}
+
+
+
+int main(int argc,char **argv)
+{
+
+  /* Define the basic run time variables. */
+   double initialTime =  0.0;
+   double finalTime   = 10.0;
+   int numberIters     = 1000; //100000;
+   int numberTimeSteps = 1000; // 1000000;
+	 double dt;
+	 double sdt;
+
+
+	 /* define some book keeping variables. */
+	 /* Define the estimated parameters for the problem. */
+	 double r1   = log(1.702); // Deer max reproduction rate
+	 double h    = log(1.16);  // Harvest rate of the deer
+	 double F    = 28000.0;    // Carrying capacity of the deer.
+	 double rho  = 0.04;       // Bond fund rate of growth: log(1+rate); 
+	 double beta = 9.0;        // cost due to deer collisions .003*3000 */
+	 double g    = 0.05;       // Net target rate of growth of the fund.
+
+	 /* thread management */
+	 //std::thread simulation[NUMBER_THREADS];
+	 int numberThreads = 0;
+
+
+   /* define the parameters ranges*/
+   double Pmin     = 430000.0;
+   double alphaMin = 0.0;
+
+   double Pmax     = 530000.0;
+   double alphaMax = 0.15;
+
+   double deltaP;
+   double deltaAlpha;
+
+   int numP     = 10; //1000;
+   int numAlpha = 10; //1000;
+   int lupeP,lupeAlpha;
+
+   /* define the parameters */
+   double P;
+   double alpha;
+
+
+   /* Define the output parameters. */
+   char outFile[1024];
+   strcpy(outFile,DEFAULT_FILE);
+
+	 /* File stuff */
+	 std::ofstream dataFile;
+
+  /* Set the step values for the parameters. */
+  deltaP     = calcDelta(Pmin,Pmax,numP);
+  deltaAlpha = calcDelta(alphaMin,alphaMax,numAlpha);
+
+  /* Set the number of iterations used in the main loop. */
+  dt  = ((finalTime-initialTime)/((double)numberTimeSteps));
+	sdt = sqrt(dt);
+
+#ifdef DEBUG
+	std::cout << "Starting iteration. " << numberTimeSteps << " iterations." << std::endl;
+#endif
+
+	/* Open the output file and print out the header. */
+	dataFile.open(outFile); // TODO - make it out to text
+  dataFile << "time,P,alpha,x,m,sumx,sumx2,summ,summ2,N" << std::endl;
+
+	/* Set the seed for the random number generator. */
+	srand48(time(NULL));
+
+
+	/* Go through and run the simulations for all possible values of the parameters. */
+  for(lupeP=0;lupeP<=numP;++lupeP)
+    {
+      P = Pmin + deltaP*((double)lupeP);
+
+      for(lupeAlpha=0;lupeAlpha<=numAlpha;++lupeAlpha) 
+        {
+          alpha = alphaMin + deltaAlpha*((double)lupeAlpha);
+
+
+#ifdef DEBUG
+					/* print a notice */
+					std::cout << "Simulation: " 
+										<< dt*((double)numberTimeSteps) << "," 
+										<< P << "," << alpha << std::endl;
+#endif
+
+					samplePath(P,alpha,beta,r1,h,F,rho,g,numberIters,dt,sdt,numberTimeSteps,dataFile);
 
 				}
 
 		}
 
-	fclose(fp);
+	dataFile.close();
 	return(0);
 }
 
