@@ -35,10 +35,12 @@
 #include <fstream>
 #include <iostream>
 #include <thread>
+#include <mutex>
 
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>
+#include <unistd.h>
 
 /* Helper functions to set command line options. */
 #include <getopt.h>
@@ -48,10 +50,36 @@
 #define NUMBER_THREADS 3
 #define DEBUG
 
+/* create a mutex that is used to protect the writing of the data to the file. */
+std::mutex writeToFile;
+
 /* Routine to calculate the step size for a given range and number of iterations. */
 double calcDelta(double theMin,double theMax,int number)
 {
 	return((theMax-theMin)/((double)number));
+}
+
+/* Routine to write out the given data to the file. */
+void printResults(double dt,int numberTimeSteps,
+									double P, double alpha,
+									double m1, double m2, 
+									double sumX, double sumX2,
+									double sumM, double sumM2,
+									int numberIters,
+									std::ofstream* dataFile)
+{
+  std::lock_guard<std::mutex> guard(writeToFile);  // Make sure that only this routine
+		  																						 // can access the file at any one time.
+  *dataFile << dt*((double)numberTimeSteps) << "," 
+						<< P << "," 
+						<< alpha << "," 
+						<< m1 << "," << m2 << "," 
+						<< sumX << "," << sumX2 << "," 
+						<< sumM << "," << sumM2 << "," 
+						<< numberIters << std::endl;
+	(*dataFile).flush();
+
+
 }
 
 
@@ -68,6 +96,7 @@ inline void randNormal(double nu[])
 
 
 
+/* Routine to approximate one sample path. */
 void samplePath(double P,double alpha,double beta,
 								double r1,double h,double F,
 								double rho,double g,
@@ -147,21 +176,11 @@ void samplePath(double P,double alpha,double beta,
 							sumM2 += m[1]*m[1]*1.0E-2;
 						}
 
-	*dataFile << dt*((double)numberTimeSteps) << "," 
-						<< P << "," 
-						<< alpha << "," 
-						<< m[0] << "," << m[1] << "," 
-						<< sumX << "," << sumX2 << "," 
-						<< sumM << "," << sumM2 << "," 
-						<< numberIters << std::endl;
-	(*dataFile).flush();
+	printResults(dt,numberTimeSteps,P,alpha,m[0],m[1],
+							 sumX,sumX2,sumM,sumM2,numberIters,dataFile);
+
 }
 
-
-void hello()
-{
-	std::cout << "Hello there!" << std::endl;
-}
 
 
 
@@ -169,10 +188,10 @@ int main(int argc,char **argv)
 {
 
   /* Define the basic run time variables. */
-   double initialTime =  0.0;
-   double finalTime   = 10.0;
-   int numberIters     = 1000; //100000;
-   int numberTimeSteps = 1000; // 1000000;
+   double initialTime  =  0.0;
+   double finalTime    = 10.0;
+   int numberIters     = 100000;
+   int numberTimeSteps = 500000;
 	 double dt;
 	 double sdt;
 
@@ -282,6 +301,10 @@ int main(int argc,char **argv)
 	// Wait until all threads are done.
 	while(numberThreads>0)
 		{
+#ifdef DEBUG
+			std::cout << "Waiting on thread " << simulation[numberThreads-1].get_id() 
+								<< std::endl;
+#endif
 			simulation[--numberThreads].join();
 		}
 
