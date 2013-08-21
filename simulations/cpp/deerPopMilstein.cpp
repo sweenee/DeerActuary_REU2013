@@ -45,7 +45,7 @@
 #include <string.h>
 
 #define DEFAULT_FILE "threaded_trial.csv"
-#define NUMBER_THREADS = 3;
+#define NUMBER_THREADS 3
 #define DEBUG
 
 /* Routine to calculate the step size for a given range and number of iterations. */
@@ -69,13 +69,14 @@ inline void randNormal(double nu[])
 
 
 void samplePath(double P,double alpha,double beta,
-									double r1,double h,double F,
-									double rho,double g,
-									int numberIters,
-									double dt,
-									double sdt,
-									int numberTimeSteps,
-									std::ofstream& dataFile)
+								double r1,double h,double F,
+								double rho,double g,
+								int numberIters,
+								double dt,
+								double sdt,
+								int numberTimeSteps,
+								std::ofstream* dataFile
+								)
 {
 
 	/* Run time parameters */
@@ -146,15 +147,20 @@ void samplePath(double P,double alpha,double beta,
 							sumM2 += m[1]*m[1]*1.0E-2;
 						}
 
-	dataFile << dt*((double)numberTimeSteps) << "," 
-					 << P << "," 
-					 << alpha << "," 
-					 << m[0] << "," << m[1] << "," 
-					 << sumX << "," << sumX2 << "," 
-					 << sumM << "," << sumM2 << "," 
-					 << numberIters << std::endl;
-	dataFile.flush();
+	*dataFile << dt*((double)numberTimeSteps) << "," 
+						<< P << "," 
+						<< alpha << "," 
+						<< m[0] << "," << m[1] << "," 
+						<< sumX << "," << sumX2 << "," 
+						<< sumM << "," << sumM2 << "," 
+						<< numberIters << std::endl;
+	(*dataFile).flush();
+}
 
+
+void hello()
+{
+	std::cout << "Hello there!" << std::endl;
 }
 
 
@@ -181,7 +187,7 @@ int main(int argc,char **argv)
 	 double g    = 0.05;       // Net target rate of growth of the fund.
 
 	 /* thread management */
-	 //std::thread simulation[NUMBER_THREADS];
+	 std::thread simulation[NUMBER_THREADS];
 	 int numberThreads = 0;
 
 
@@ -240,15 +246,29 @@ int main(int argc,char **argv)
         {
           alpha = alphaMin + deltaAlpha*((double)lupeAlpha);
 
+					for(numberThreads=0;numberThreads<NUMBER_THREADS;++numberThreads)
+						{
+								simulation[numberThreads] = std::thread(samplePath,
+																												P,alpha,beta,
+																												r1,h,F,rho,g,
+																												numberIters,dt,sdt,
+																												numberTimeSteps,
+																												&dataFile
+																												);
 
 #ifdef DEBUG
-					/* print a notice */
-					std::cout << "Simulation: " 
-										<< dt*((double)numberTimeSteps) << "," 
-										<< P << "," << alpha << std::endl;
+							/* print a notice */
+							std::cout << "Simulation: " 
+												<< dt*((double)numberTimeSteps) << "," 
+												<< P << "," << alpha << std::endl;
 #endif
 
-					samplePath(P,alpha,beta,r1,h,F,rho,g,numberIters,dt,sdt,numberTimeSteps,dataFile);
+						}
+
+					for(numberThreads=0;numberThreads<NUMBER_THREADS;++numberThreads)
+						{
+							simulation[numberThreads].join();
+						}
 
 				}
 
