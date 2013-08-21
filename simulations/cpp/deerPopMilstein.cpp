@@ -246,33 +246,45 @@ int main(int argc,char **argv)
         {
           alpha = alphaMin + deltaAlpha*((double)lupeAlpha);
 
-					for(numberThreads=0;numberThreads<NUMBER_THREADS;++numberThreads)
+					if(numberThreads >= NUMBER_THREADS)
 						{
-								simulation[numberThreads] = std::thread(samplePath,
-																												P,alpha,beta,
-																												r1,h,F,rho,g,
-																												numberIters,dt,sdt,
-																												numberTimeSteps,
-																												&dataFile
-																												);
-
+							// There are too many threads. Wait for each run to end.
+							while(numberThreads>0)
+								{
 #ifdef DEBUG
-							/* print a notice */
-							std::cout << "Simulation: " 
-												<< dt*((double)numberTimeSteps) << "," 
-												<< P << "," << alpha << std::endl;
+									std::cout << "Waiting on thread " << simulation[numberThreads-1].get_id() 
+														<< std::endl;
 #endif
-
+									simulation[--numberThreads].join();
+								}
 						}
 
-					for(numberThreads=0;numberThreads<NUMBER_THREADS;++numberThreads)
-						{
-							simulation[numberThreads].join();
-						}
-
+					// Make this run a separate thread.
+					simulation[numberThreads++] = std::thread(samplePath,
+																										P,alpha,beta,
+																										r1,h,F,rho,g,
+																										numberIters,dt,sdt,
+																										numberTimeSteps,
+																										&dataFile);
+#ifdef DEBUG
+					/* print a notice */
+					std::cout << "Simulation: " 
+										<< dt*((double)numberTimeSteps) << "," 
+										<< P << "," << alpha << "," 
+										<< simulation[numberThreads-1].get_id() << std::endl;
+#endif
 				}
 
+
+
 		}
+
+	// Wait until all threads are done.
+	while(numberThreads>0)
+		{
+			simulation[--numberThreads].join();
+		}
+
 
 	dataFile.close();
 	return(0);
