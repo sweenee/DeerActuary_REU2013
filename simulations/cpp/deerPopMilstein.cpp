@@ -37,18 +37,16 @@
 #include <thread>
 #include <mutex>
 
-#include <stdlib.h>
 #include <math.h>
-#include <time.h>
-#include <unistd.h>
 
 /* Helper functions to set command line options. */
-#include <getopt.h>
+//#include <getopt.h>
 #include <string.h>
 
 #define DEFAULT_FILE "threaded_trial.csv"
 #define NUMBER_THREADS 3
-#define DEBUG
+//#define DEBUG
+#define VERBOSE
 
 /* create a mutex that is used to protect the writing of the data to the file. */
 std::mutex writeToFile;
@@ -190,8 +188,13 @@ int main(int argc,char **argv)
   /* Define the basic run time variables. */
    double initialTime  =  0.0;
    double finalTime    = 10.0;
+#ifdef DEBUG
+   int numberIters     = 1000;
+   int numberTimeSteps = 5000;
+#else
    int numberIters     = 100000;
    int numberTimeSteps = 500000;
+#endif
 	 double dt;
 	 double sdt;
 
@@ -220,8 +223,13 @@ int main(int argc,char **argv)
    double deltaP;
    double deltaAlpha;
 
-   int numP     = 10; //1000;
-   int numAlpha = 10; //1000;
+#ifdef DEBUG
+   int numP     = 1000;
+   int numAlpha = 1000;
+#else
+   int numP     = 100;
+   int numAlpha = 100;
+#endif
    int lupeP,lupeAlpha;
 
    /* define the parameters */
@@ -244,12 +252,12 @@ int main(int argc,char **argv)
   dt  = ((finalTime-initialTime)/((double)numberTimeSteps));
 	sdt = sqrt(dt);
 
-#ifdef DEBUG
+#ifdef VERBOSE
 	std::cout << "Starting iteration. " << numberTimeSteps << " iterations." << std::endl;
 #endif
 
 	/* Open the output file and print out the header. */
-	dataFile.open(outFile); // TODO - make it out to text
+	dataFile.open(outFile,std::ios::out);
   dataFile << "time,P,alpha,x,m,sumx,sumx2,summ,summ2,N" << std::endl;
 
 	/* Set the seed for the random number generator. */
@@ -285,7 +293,7 @@ int main(int argc,char **argv)
 																										numberIters,dt,sdt,
 																										numberTimeSteps,
 																										&dataFile);
-#ifdef DEBUG
+#ifdef VERBOSE
 					/* print a notice */
 					std::cout << "Simulation: " 
 										<< dt*((double)numberTimeSteps) << "," 
